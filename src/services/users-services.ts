@@ -3,6 +3,12 @@ import { users, sessions } from "../db/schema";
 import { eq } from "drizzle-orm";
 
 export const UserService = {
+	/**
+	 * Mendaftarkan akun pengguna baru (Registrasi).
+	 * Fungsi ini bertugas mengecek ketersediaan email terlebih dahulu agar tidak terjadi duplikasi.
+	 * Setelah divalidasi, ia akan membungkus (hash) password pengguna demi keamanan sebelum disimpan
+	 * di dalam database tabel `users`.
+	 */
 	async registerUser({ name, email, password }: any) {
 		const existingUser = await db
 			.select()
@@ -25,6 +31,12 @@ export const UserService = {
 		return { data: "OK" };
 	},
 
+	/**
+	 * Autentikasi Pengguna (Login).
+	 * Fungsi ini bertugas memverifikasi eksistensi alamat email dan mencocokkan password
+	 * menggunakan algoritma bcrypt/argon2 native dari Bun. Jika sesuai, ia akan membuat sebuah UUID
+	 * eksklusif untuk otorisasi akses (sesi) yang selanjutnya ditulis pada tabel `sessions`.
+	 */
 	async loginUser({ email, password }: any) {
 		const [user] = await db
 			.select()
@@ -52,6 +64,11 @@ export const UserService = {
 		return { data: token };
 	},
 
+	/**
+	 * Mendapatkan detail profil yang terafiliasi dengan token tertentu (Get Current Profile).
+	 * Ia melakukan Inner Join (penggabungan query SQL) antara tabel `sessions` dan tabel `users`
+	 * sehingga mampu mengambil kolom id, name, dan email tanpa menyertakan record password rentan.
+	 */
 	async getCurrentUser(token: string) {
 		const [sessionWithUser] = await db
 			.select({
@@ -79,6 +96,11 @@ export const UserService = {
 		};
 	},
 
+	/**
+	 * Pemberhentian Akses Token (Logout).
+	 * Bertujuan untuk mencari token terkait di dalam tabel `sessions`,
+	 * untuk kemudian menghapusnya secara permanen agar di lain waktu token tidak dapat digunakan masuk.
+	 */
 	async logoutUser(token: string) {
 		const [session] = await db
 			.select()

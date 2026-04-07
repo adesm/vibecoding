@@ -36,6 +36,18 @@ export const usersRoutes = new Elysia({ prefix: "/api/users" })
 				email: t.String({ format: "email", maxLength: 255 }),
 				password: t.String({ maxLength: 255 }),
 			}),
+			response: {
+				200: t.Object({
+					data: t.String(),
+				}),
+				400: t.Object({
+					error: t.String(),
+				}),
+			},
+			detail: {
+				summary: "Registrasi Pengguna Baru",
+				tags: ["Authentication"],
+			},
 		}
 	)
 	.post(
@@ -53,6 +65,18 @@ export const usersRoutes = new Elysia({ prefix: "/api/users" })
 				email: t.String({ format: "email", maxLength: 255 }),
 				password: t.String({ maxLength: 255 }),
 			}),
+			response: {
+				200: t.Object({
+					data: t.String(),
+				}),
+				400: t.Object({
+					error: t.String(),
+				}),
+			},
+			detail: {
+				summary: "Login Pengguna",
+				tags: ["Authentication"],
+			},
 		}
 	)
 	.group("", (app) =>
@@ -69,20 +93,60 @@ export const usersRoutes = new Elysia({ prefix: "/api/users" })
 					return { error: "unauthorized" };
 				}
 			})
-			.get("/current", async ({ token, set }) => {
-				try {
-					const result = await UserService.getCurrentUser(token!);
-					return result;
-				} catch (error: any) {
-					return handleRouteError(error, set);
+			.get(
+				"/current",
+				async ({ token, set }) => {
+					try {
+						const result = await UserService.getCurrentUser(token!);
+						return result;
+					} catch (error: any) {
+						return handleRouteError(error, set);
+					}
+				},
+				{
+					response: {
+						200: t.Object({
+							data: t.Object({
+								id: t.Number(),
+								name: t.String(),
+								email: t.String(),
+								createdAt: t.Nullable(t.Date()),
+								created_at: t.Nullable(t.Date()),
+							}),
+						}),
+						401: t.Object({
+							error: t.String(),
+						}),
+					},
+					detail: {
+						summary: "Profil Pengguna Saat Ini",
+						tags: ["Authentication"],
+					},
 				}
-			})
-			.delete("/logout", async ({ token, set }) => {
-				try {
-					const result = await UserService.logoutUser(token!);
-					return result;
-				} catch (error: any) {
-					return handleRouteError(error, set);
+			)
+			.delete(
+				"/logout",
+				async ({ token, set }) => {
+					try {
+						const result = await UserService.logoutUser(token!);
+						return result;
+					} catch (error: any) {
+						return handleRouteError(error, set);
+					}
+				},
+				{
+					response: {
+						200: t.Object({
+							data: t.String(),
+						}),
+						401: t.Object({
+							error: t.String(),
+						}),
+					},
+					detail: {
+						summary: "Logout Pengguna",
+						tags: ["Authentication"],
+					},
 				}
-			})
+			)
 	);
