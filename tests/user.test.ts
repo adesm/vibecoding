@@ -4,6 +4,11 @@ import { db } from "../src/db";
 import { users, sessions } from "../src/db/schema";
 
 describe("User API", () => {
+	it("should be using the test database", () => {
+		console.log("Current Database URI:", process.env.DATABASE_URL);
+		expect(process.env.DATABASE_URL).toContain("/vibecoding_test");
+	});
+
 	beforeEach(async () => {
 		// Safety check: Don't run cleanup if not in test environment
 		if (process.env.NODE_ENV !== "test") {
