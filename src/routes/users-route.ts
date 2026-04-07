@@ -1,6 +1,24 @@
 import { Elysia, t } from "elysia";
 import { UserService } from "../services/users-services";
 
+const handleRouteError = (error: any, set: any) => {
+	const message = error.message;
+	const isBusinessError = [
+		"email sudah terdaftar",
+		"email atau password salah",
+		"unauthorized",
+	].includes(message);
+
+	if (isBusinessError) {
+		set.status = message === "unauthorized" ? 401 : 400;
+		return { error: message };
+	}
+
+	console.error(error);
+	set.status = 500;
+	return { error: "Internal Server Error" };
+};
+
 export const usersRoutes = new Elysia({ prefix: "/api/users" })
 	.post(
 		"/",
@@ -9,15 +27,14 @@ export const usersRoutes = new Elysia({ prefix: "/api/users" })
 				const result = await UserService.registerUser(body);
 				return result;
 			} catch (error: any) {
-				set.status = 400;
-				return { error: error.message };
+				return handleRouteError(error, set);
 			}
 		},
 		{
 			body: t.Object({
-				name: t.String(),
-				email: t.String({ format: "email" }),
-				password: t.String(),
+				name: t.String({ maxLength: 255 }),
+				email: t.String({ format: "email", maxLength: 255 }),
+				password: t.String({ maxLength: 255 }),
 			}),
 		}
 	)
@@ -28,14 +45,13 @@ export const usersRoutes = new Elysia({ prefix: "/api/users" })
 				const result = await UserService.loginUser(body);
 				return result;
 			} catch (error: any) {
-				set.status = 401;
-				return { error: error.message };
+				return handleRouteError(error, set);
 			}
 		},
 		{
 			body: t.Object({
-				email: t.String({ format: "email" }),
-				password: t.String(),
+				email: t.String({ format: "email", maxLength: 255 }),
+				password: t.String({ maxLength: 255 }),
 			}),
 		}
 	)
@@ -58,8 +74,7 @@ export const usersRoutes = new Elysia({ prefix: "/api/users" })
 					const result = await UserService.getCurrentUser(token!);
 					return result;
 				} catch (error: any) {
-					set.status = 401;
-					return { error: error.message };
+					return handleRouteError(error, set);
 				}
 			})
 			.delete("/logout", async ({ token, set }) => {
@@ -67,8 +82,7 @@ export const usersRoutes = new Elysia({ prefix: "/api/users" })
 					const result = await UserService.logoutUser(token!);
 					return result;
 				} catch (error: any) {
-					set.status = 401;
-					return { error: error.message };
+					return handleRouteError(error, set);
 				}
 			})
 	);
