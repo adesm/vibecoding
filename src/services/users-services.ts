@@ -51,4 +51,31 @@ export const UserService = {
 
 		return { data: token };
 	},
+
+	async getCurrentUser(token: string) {
+		const [sessionWithUser] = await db
+			.select({
+				user: {
+					id: users.id,
+					name: users.name,
+					email: users.email,
+					createdAt: users.createdAt,
+				},
+			})
+			.from(sessions)
+			.innerJoin(users, eq(sessions.userId, users.id))
+			.where(eq(sessions.token, token))
+			.limit(1);
+
+		if (!sessionWithUser) {
+			throw new Error("unauthorized");
+		}
+
+		return {
+			data: {
+				...sessionWithUser.user,
+				created_at: sessionWithUser.user.createdAt,
+			},
+		};
+	},
 };
