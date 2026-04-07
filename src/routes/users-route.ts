@@ -36,6 +36,10 @@ export const usersRoutes = new Elysia({ prefix: "/api/users" })
 				email: t.String({ format: "email", maxLength: 255 }),
 				password: t.String({ maxLength: 255 }),
 			}),
+			detail: {
+				summary: "Registrasi Pengguna Baru",
+				tags: ["Authentication"],
+			},
 		}
 	)
 	.post(
@@ -53,6 +57,10 @@ export const usersRoutes = new Elysia({ prefix: "/api/users" })
 				email: t.String({ format: "email", maxLength: 255 }),
 				password: t.String({ maxLength: 255 }),
 			}),
+			detail: {
+				summary: "Login Pengguna",
+				tags: ["Authentication"],
+			},
 		}
 	)
 	.group("", (app) =>
@@ -69,20 +77,38 @@ export const usersRoutes = new Elysia({ prefix: "/api/users" })
 					return { error: "unauthorized" };
 				}
 			})
-			.get("/current", async ({ token, set }) => {
-				try {
-					const result = await UserService.getCurrentUser(token!);
-					return result;
-				} catch (error: any) {
-					return handleRouteError(error, set);
+			.get(
+				"/current",
+				async ({ token, set }) => {
+					try {
+						const result = await UserService.getCurrentUser(token!);
+						return result;
+					} catch (error: any) {
+						return handleRouteError(error, set);
+					}
+				},
+				{
+					detail: {
+						summary: "Profil Pengguna Saat Ini",
+						tags: ["Authentication"],
+					},
 				}
-			})
-			.delete("/logout", async ({ token, set }) => {
-				try {
-					const result = await UserService.logoutUser(token!);
-					return result;
-				} catch (error: any) {
-					return handleRouteError(error, set);
+			)
+			.delete(
+				"/logout",
+				async ({ token, set }) => {
+					try {
+						const result = await UserService.logoutUser(token!);
+						return result;
+					} catch (error: any) {
+						return handleRouteError(error, set);
+					}
+				},
+				{
+					detail: {
+						summary: "Logout Pengguna",
+						tags: ["Authentication"],
+					},
 				}
-			})
+			)
 	);
