@@ -5,6 +5,14 @@ import { users, sessions } from "../src/db/schema";
 
 describe("User API", () => {
 	beforeEach(async () => {
+		// Safety check: Don't run cleanup if not in test environment
+		if (process.env.NODE_ENV !== "test") {
+			throw new Error(
+				"Critical: Database cleanup is only allowed in 'test' environment! Current: " +
+					process.env.NODE_ENV
+			);
+		}
+
 		// Clean the database before each test
 		await db.delete(sessions);
 		await db.delete(users);
