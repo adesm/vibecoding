@@ -78,4 +78,9 @@ export const UserService = {
 			},
 		};
 	},
+
+	async logoutUser(token: string) {
+		await db.delete(sessions).where(eq(sessions.token, token));
+		return { data: "ok" };
+	},
 };
