@@ -21,7 +21,7 @@ const handleRouteError = (error: any, set: any) => {
 
 export const usersRoutes = new Elysia({ prefix: "/api/users" })
 	.post(
-		"/",
+		"",
 		async ({ body, set }) => {
 			try {
 				const result = await UserService.registerUser(body);
@@ -55,7 +55,7 @@ export const usersRoutes = new Elysia({ prefix: "/api/users" })
 			}),
 		}
 	)
-	.group("/", (app) =>
+	.group("", (app) =>
 		app
 			.derive(({ headers: { authorization } }) => {
 				if (!authorization || !authorization.startsWith("Bearer ")) {
