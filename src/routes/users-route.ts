@@ -39,33 +39,36 @@ export const usersRoutes = new Elysia({ prefix: "/api/users" })
 			}),
 		}
 	)
-	.get("/current", async ({ headers: { authorization }, set }) => {
-		if (!authorization || !authorization.startsWith("Bearer ")) {
-			set.status = 401;
-			return { error: "unauthorized" };
-		}
-
-		try {
-			const token = authorization.substring(7);
-			const result = await UserService.getCurrentUser(token);
-			return result;
-		} catch (error: any) {
-			set.status = 401;
-			return { error: error.message };
-		}
-	})
-	.delete("/logout", async ({ headers: { authorization }, set }) => {
-		if (!authorization || !authorization.startsWith("Bearer ")) {
-			set.status = 401;
-			return { error: "unauthorized" };
-		}
-
-		try {
-			const token = authorization.substring(7);
-			const result = await UserService.logoutUser(token);
-			return result;
-		} catch (error: any) {
-			set.status = 401;
-			return { error: error.message };
-		}
-	});
+	.group("/", (app) =>
+		app
+			.derive(({ headers: { authorization } }) => {
+				if (!authorization || !authorization.startsWith("Bearer ")) {
+					return { token: null };
+				}
+				return { token: authorization.substring(7) };
+			})
+			.onBeforeHandle(({ token, set }) => {
+				if (!token) {
+					set.status = 401;
+					return { error: "unauthorized" };
+				}
+			})
+			.get("/current", async ({ token, set }) => {
+				try {
+					const result = await UserService.getCurrentUser(token!);
+					return result;
+				} catch (error: any) {
+					set.status = 401;
+					return { error: error.message };
+				}
+			})
+			.delete("/logout", async ({ token, set }) => {
+				try {
+					const result = await UserService.logoutUser(token!);
+					return result;
+				} catch (error: any) {
+					set.status = 401;
+					return { error: error.message };
+				}
+			})
+	);
